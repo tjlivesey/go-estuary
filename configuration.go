@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"os"
 )
 
 var Config Configuration
@@ -22,12 +23,21 @@ type RabbitMQ struct {
 	Exchange string
 }
 
-func Configure(path, environment string) (*Configuration, error) {
-	log.Printf("Reading configuration from %s", path)
+func Configure(path string) (*Configuration, error) {
+	log.Printf("Reading configuration from %s for %s environment", path, os.Getenv("ADISPATCH_ENV"))
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(b, &Config)
+
+	var c map[string]Configuration
+
+	err = json.Unmarshal(b, &c)
+	stage := os.Getenv("ADISPATCH_ENV")
+	if stage == "" {
+		stage = "development"
+	}
+
+	Config = c[stage]
 	return &Config, err
 }

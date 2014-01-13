@@ -12,6 +12,7 @@ type Connection struct {
 
 func NewConnection() (*Connection, error){
 	config := Config.RabbitMQ
+	log.Printf("%s", config)
 	uri := fmt.Sprintf("amqp://%s:%s@%s:%s", config.Username, config.Password, config.Host, config.Port)
 	log.Printf("Connecting to RabbitMQ at %s", uri)
 	
