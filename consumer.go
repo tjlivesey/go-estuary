@@ -41,7 +41,7 @@ func NewConsumer(connection *amqp.Connection, handler Handler) (*Consumer, error
 	    handler.Name, // name of the queue
 	    true,      // durable
 	    false,     // delete when usused
-	    false,     // exclusive
+	    handler.Exclusive, // exclusive
 	    false,     // noWait
 	    nil,       // arguments
 		)
