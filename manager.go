@@ -79,7 +79,7 @@ func (m *Manager) handleDeliveries(deliveries <-chan amqp.Delivery, consumer Con
 		go func(wg *sync.WaitGroup) {
 			defer func(){
 				if r := recover(); r != nil{
-					log.Printf("Handler '%s' panicked while processing delivery", consumer.Handler.Name)
+					log.Printf("Handler '%s' panicked while processing delivery: \n %s", consumer.Handler.Name, r)
 				}
 			}()
 			wg.Add(1)
