@@ -75,17 +75,22 @@ func (m *Manager) Shutdown() {
 func (m *Manager) handleDeliveries(deliveries <-chan amqp.Delivery, consumer Consumer){
 	for d := range deliveries {
 		delivery := NewDelivery(d)
-		// Pass delivery to handler and recover if the handler panics
-		go func(wg *sync.WaitGroup) {
-			defer func(){
-				if r := recover(); r != nil{
-					log.Printf("Handler '%s' panicked while processing delivery: \n %s", consumer.Handler.Name, r)
-				}
-			}()
-			wg.Add(1)
-			consumer.Handler.HandlerFunc(*delivery)
-			wg.Done()
-		}(&m.wg)
+		// Only process if this is not a retry
+		if delivery.RetryCount() == 0 {
+			// Pass delivery to handler and recover if the handler panics
+			go func(wg *sync.WaitGroup) {
+				defer func(){
+					if r := recover(); r != nil{
+						log.Printf("Handler '%s' panicked while processing delivery: \n %s", consumer.Handler.Name, r)
+					}
+				}()
+				wg.Add(1)
+				consumer.Handler.HandlerFunc(*delivery)
+				wg.Done()
+			}(&m.wg)
+		} else {
+			log.Printf("Skipping retried message")
+		}
 		// Acknowledge message early rather than wait for response from 
 		// handler. This could be tweaked later to allow retries but
 		// handlers would have to be idempotent which is difficult for 

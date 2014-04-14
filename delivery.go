@@ -3,6 +3,7 @@ package estuary
 import (
 	"github.com/streadway/amqp"
 	"time"
+	"strconv"
 )
 
 type Delivery struct {
@@ -24,4 +25,14 @@ func NewDelivery(d amqp.Delivery) *Delivery{
 
 func (d *Delivery) Ack(b bool) {
 	d.amqpDelivery.Ack(false)
+}
+
+func (d *Delivery) RetryCount() int {
+	count, exists := d.amqpDelivery.Headers["retry_count"]
+	if exists {
+		countInt, _ := strconv.Atoi(count.(string))
+		return countInt
+	} else {
+		return 0
+	}
 }
